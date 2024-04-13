@@ -27,7 +27,7 @@ namespace Fmod5Sharp.FmodTypes
         public void ToStream(Stream stream)
         {
             var headerStart = stream.Position;
-            using var writer = new BinaryWriter(stream);
+            using var writer = new BinaryWriter(stream, Encoding.ASCII, true);
             Header.Write(writer);
 
             var nameTableStart = stream.Position;
@@ -47,13 +47,11 @@ namespace Fmod5Sharp.FmodTypes
                     writer.Write((byte)0);
                 }
             }
-
-            var nameTableEnd = stream.Position;
-            Header.SizeOfNameTable = (uint)(nameTableEnd - nameTableStart);
             
             writer.Align(32);
 
             var dataStart = stream.Position;
+            Header.SizeOfNameTable = (uint)(dataStart - nameTableStart);
 
             foreach (var sample in Samples)
             {
