@@ -28,8 +28,7 @@ namespace Fmod5Sharp.CodecRebuilders
             using var stream = new MemoryStream();
             using var writer = new WaveFileWriter(stream, format);
             
-            writer.Write(sample.SampleBytes.ToArray(), 0, sample.SampleBytes.Length);
-
+            writer.Write(sample.SampleBytes.Span);
             return stream.GetBuffer();
         }
     }

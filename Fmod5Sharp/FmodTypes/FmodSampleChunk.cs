@@ -5,10 +5,8 @@ using Fmod5Sharp.Util;
 
 namespace Fmod5Sharp.FmodTypes
 {
-	internal class FmodSampleChunk : IBinaryReadable, IBinaryWritable
+	internal class FmodSampleChunk : IBinaryWritable
 	{
-		internal static FmodSampleMetadata? CurrentSample;
-		
 		public FmodSampleChunkType ChunkType;
 		public uint ChunkSize;
 		public bool MoreChunks;
@@ -16,7 +14,7 @@ namespace Fmod5Sharp.FmodTypes
 		internal IChunkData ChunkData;
 #pragma warning restore 8618
 
-		void IBinaryReadable.Read(BinaryReader reader)
+		public void Read(BinaryReader reader, FmodSampleMetadata sampleMetadata)
 		{
 			var chunkInfoRaw = reader.ReadUInt32();
 			MoreChunks = chunkInfoRaw.Bits(0, 1) == 1;
@@ -29,7 +27,7 @@ namespace Fmod5Sharp.FmodTypes
 				FmodSampleChunkType.FREQUENCY => new FrequencyChunkData(),
 				FmodSampleChunkType.CHANNELS => new ChannelChunkData(),
 				FmodSampleChunkType.LOOP => new LoopChunkData(),
-				FmodSampleChunkType.DSPCOEFF => new DspCoefficientsBlockData(CurrentSample!),
+				FmodSampleChunkType.DSPCOEFF => new DspCoefficientsBlockData(sampleMetadata),
 				_ => new UnknownChunkData(),
 			};
 

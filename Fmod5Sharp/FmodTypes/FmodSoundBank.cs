@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Fmod5Sharp.Util;
 
@@ -25,10 +26,13 @@ namespace Fmod5Sharp.FmodTypes
 
         public void ToStream(Stream stream)
         {
+            var headerStart = stream.Position;
             using var writer = new BinaryWriter(stream);
             Header.Write(writer);
 
-            if (Header.SizeOfNameTable > 0)
+            var nameTableStart = stream.Position;
+
+            if (Samples.All(s => s.Name != null))
             {
                 var nameOffset = Samples.Count * 4;
                 foreach (var sample in Samples)
@@ -44,12 +48,28 @@ namespace Fmod5Sharp.FmodTypes
                 }
             }
 
-            writer.Align(32);
+            var nameTableEnd = stream.Position;
+            Header.SizeOfNameTable = (uint)(nameTableEnd - nameTableStart);
             
+            writer.Align(32);
+
+            var dataStart = stream.Position;
+
             foreach (var sample in Samples)
             {
+                sample.Metadata.DataOffset = (uint)(stream.Position - dataStart);
                 sample.Write(writer);
+
+                writer.Align(32);
             }
+
+            var dataEnd = stream.Position;
+            Header.SizeOfData = (uint)(dataEnd - dataStart);
+
+            stream.Position = headerStart;
+            Header.Write(writer);
+
+            stream.Position = dataEnd;
         }
     }
 }

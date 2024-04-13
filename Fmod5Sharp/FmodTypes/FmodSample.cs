@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
+using CommunityToolkit.HighPerformance;
 using Fmod5Sharp.CodecRebuilders;
 using Fmod5Sharp.Util;
+using NAudio.Wave;
 
 namespace Fmod5Sharp.FmodTypes
 {
@@ -50,6 +53,19 @@ namespace Fmod5Sharp.FmodTypes
                     fileExtension = null;
                     return false;
             }
+        }
+
+        public void ReplaceAudio(string path)
+        {
+            var reader = new WaveFileReader(path);
+            Metadata.SampleCount = (uint)reader.SampleCount;
+
+            var id = FsbLoader.Frequencies.First(f => f.Value == reader.WaveFormat.SampleRate).Key;
+            Metadata.FrequencyId = id;
+            Metadata.NumChannels = reader.WaveFormat.Channels;
+
+            SampleBytes = new byte[reader.Length];
+            reader.CopyTo(SampleBytes.AsStream());
         }
 
         public void Write(BinaryWriter writer)

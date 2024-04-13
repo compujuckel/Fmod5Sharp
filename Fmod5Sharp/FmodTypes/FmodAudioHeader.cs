@@ -8,18 +8,16 @@ namespace Fmod5Sharp.FmodTypes
 {
 	public class FmodAudioHeader : IBinaryWritable
 	{
-		private static readonly object ChunkReadingLock = new();
-
 		internal readonly bool IsValid;
 		
-		public readonly FmodAudioType AudioType;
+		public FmodAudioType AudioType;
 		public readonly uint Version;
-		public readonly uint NumSamples;
+		public uint NumSamples;
 
-		internal readonly uint SizeOfThisHeader;
-		internal readonly uint SizeOfSampleHeaders;
-		internal readonly uint SizeOfNameTable;
-		internal readonly uint SizeOfData;
+		internal uint SizeOfThisHeader;
+		internal uint SizeOfSampleHeaders;
+		internal uint SizeOfNameTable;
+		internal uint SizeOfData;
 
 		internal uint Unknown1;
 		internal uint Unknown2;
@@ -78,29 +76,24 @@ namespace Fmod5Sharp.FmodTypes
 					continue;
 				}
 
-				lock (ChunkReadingLock)
-				{
-					List<FmodSampleChunk> chunks = new();
-					FmodSampleChunk.CurrentSample = sampleMetadata;
-					
-					FmodSampleChunk nextChunk;
-					do
-					{
-						nextChunk = reader.ReadEndian<FmodSampleChunk>();
-						chunks.Add(nextChunk);
-					} while (nextChunk.MoreChunks);
-
-					FmodSampleChunk.CurrentSample = null;
-					
-					if (chunks.FirstOrDefault(c => c.ChunkType == FmodSampleChunkType.FREQUENCY) is { ChunkData: FrequencyChunkData fcd })
-					{
-						sampleMetadata.FrequencyId = fcd.ActualFrequencyId;
-					}
-
-					sampleMetadata.Chunks = chunks;
+				List<FmodSampleChunk> chunks = new();
 				
-					Samples.Add(sampleMetadata);
+				FmodSampleChunk nextChunk;
+				do
+				{
+					nextChunk = new FmodSampleChunk();
+					nextChunk.Read(reader, sampleMetadata);
+					chunks.Add(nextChunk);
+				} while (nextChunk.MoreChunks);
+				
+				if (chunks.FirstOrDefault(c => c.ChunkType == FmodSampleChunkType.FREQUENCY) is { ChunkData: FrequencyChunkData fcd })
+				{
+					sampleMetadata.FrequencyId = fcd.ActualFrequencyId;
 				}
+
+				sampleMetadata.Chunks = chunks;
+			
+				Samples.Add(sampleMetadata);
 			}
 			
 			IsValid = true;
@@ -110,7 +103,7 @@ namespace Fmod5Sharp.FmodTypes
 		{
 			writer.Write("FSB5"u8);
 			writer.Write(Version);
-			writer.Write(NumSamples);
+			writer.Write(Samples.Count);
 			writer.Write(SizeOfSampleHeaders);
 			writer.Write(SizeOfNameTable);
 			writer.Write(SizeOfData);
@@ -127,6 +120,8 @@ namespace Fmod5Sharp.FmodTypes
 			writer.Write(HashUpper);
 			writer.Write(Unknown3);
 
+			var sampleHeadersStart = writer.Position();
+
 			foreach (var sample in Samples)
 			{
 				sample.Write(writer);
@@ -138,6 +133,8 @@ namespace Fmod5Sharp.FmodTypes
 					chunk.Write(writer);
 				}
 			}
+
+			SizeOfSampleHeaders = (uint)(writer.Position() - sampleHeadersStart);
 		}
 	}
 }
