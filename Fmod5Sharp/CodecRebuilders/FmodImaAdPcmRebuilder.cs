@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using CommunityToolkit.HighPerformance;
 using Fmod5Sharp.FmodTypes;
 using Fmod5Sharp.Util;
 using NAudio.Wave;
@@ -31,7 +32,7 @@ namespace Fmod5Sharp.CodecRebuilders
             -1, -1, -1, -1, 2, 4, 6, 8,
         };
 
-        private static void ExpandNibble(MemoryStream stream, long byteOffset, int nibbleShift, ref int hist, ref int stepIndex)
+        private static void ExpandNibble(Stream stream, long byteOffset, int nibbleShift, ref int hist, ref int stepIndex)
         {
             //Read the raw nibble
             stream.Seek(byteOffset, SeekOrigin.Begin);
@@ -66,7 +67,7 @@ namespace Fmod5Sharp.CodecRebuilders
 
             var numChannels = (int)sample.Metadata.Channels;
 
-            using var stream = new MemoryStream(sample.SampleBytes);
+            using var stream = sample.SampleBytes.AsStream();
             using var reader = new BinaryReader(stream);
 
             var ret = new short[sample.Metadata.SampleCount * 2];
@@ -129,7 +130,7 @@ namespace Fmod5Sharp.CodecRebuilders
 
             const int frameSize = 0x24;
             
-            using var stream = new MemoryStream(sample.SampleBytes);
+            using var stream = sample.SampleBytes.AsStream();
             using var reader = new BinaryReader(stream);
             
             var numFrames = (int)sample.Metadata.SampleCount / SamplesPerFramePerChannel;

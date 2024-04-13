@@ -10,5 +10,10 @@ namespace Fmod5Sharp.ChunkData
 		{
 			NumChannels = reader.ReadByte();
 		}
+
+		public void Write(BinaryWriter writer)
+		{
+			writer.Write(NumChannels);
+		}
 	}
 }

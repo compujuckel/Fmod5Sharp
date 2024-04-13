@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using CommunityToolkit.HighPerformance;
 using Fmod5Sharp.ChunkData;
 using Fmod5Sharp.FmodTypes;
 using Fmod5Sharp.Util;
@@ -130,9 +131,9 @@ namespace Fmod5Sharp.CodecRebuilders
             return new(oggMs.ToArray(), false, 0, 1);
         }
 
-        private static void CopySampleData(FmodVorbisData vorbisData, byte[] sampleBytes, OggStream oggStream, Stream outputStream)
+        private static void CopySampleData(FmodVorbisData vorbisData, Memory<byte> sampleBytes, OggStream oggStream, Stream outputStream)
         {
-            using var inputStream = new MemoryStream(sampleBytes);
+            using var inputStream = sampleBytes.AsStream();
             using var inputReader = new BinaryReader(inputStream);
 
             ReadSamplePackets(inputReader, out var packetLength, out var packets);

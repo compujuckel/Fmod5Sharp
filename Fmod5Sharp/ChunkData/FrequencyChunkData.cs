@@ -10,5 +10,10 @@ namespace Fmod5Sharp.ChunkData
 		{
 			ActualFrequencyId = reader.ReadUInt32();
 		}
+
+		public void Write(BinaryWriter writer)
+		{
+			writer.Write(ActualFrequencyId);
+		}
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using CommunityToolkit.HighPerformance;
 using Fmod5Sharp.FmodTypes;
 using Fmod5Sharp.Util;
 
@@ -22,9 +23,9 @@ namespace Fmod5Sharp
             { 10, 96_000 },
         };
         
-        private static FmodSoundBank? LoadInternal(byte[] bankBytes, bool throwIfError)
+        private static FmodSoundBank? LoadInternal(Memory<byte> bankBytes, bool throwIfError)
         {
-            using MemoryStream stream = new(bankBytes);
+            using var stream = bankBytes.AsStream();
             using BinaryReader reader = new(stream);
 
             FmodAudioHeader header = new(reader);
@@ -40,7 +41,7 @@ namespace Fmod5Sharp
             List<FmodSample> samples = new();
 
             //Remove header from data block.
-            var bankData = bankBytes.AsSpan((int)(header.SizeOfThisHeader + header.SizeOfNameTable + header.SizeOfSampleHeaders));
+            var bankData = bankBytes.Slice((int)(header.SizeOfThisHeader + header.SizeOfNameTable + header.SizeOfSampleHeaders));
 
             for (var i = 0; i < header.Samples.Count; i++)
             {
@@ -54,7 +55,7 @@ namespace Fmod5Sharp
                     lastByteOfSample = (int)header.Samples[i + 1].DataOffset;
                 }
 
-                var sample = new FmodSample(sampleMetadata, bankData[firstByteOfSample..lastByteOfSample].ToArray());
+                var sample = new FmodSample(sampleMetadata, bankData[firstByteOfSample..lastByteOfSample]);
 
                 if (header.SizeOfNameTable > 0)
                 {
@@ -73,13 +74,13 @@ namespace Fmod5Sharp
             return new FmodSoundBank(header, samples);
         }
 
-        public static bool TryLoadFsbFromByteArray(byte[] bankBytes, out FmodSoundBank? bank)
+        public static bool TryLoadFsbFromByteArray(Memory<byte> bankBytes, out FmodSoundBank? bank)
         {
             bank = LoadInternal(bankBytes, false);
             return bank != null;
         }
 
-        public static FmodSoundBank LoadFsbFromByteArray(byte[] bankBytes)
+        public static FmodSoundBank LoadFsbFromByteArray(Memory<byte> bankBytes)
             => LoadInternal(bankBytes, true)!;
     }
 }

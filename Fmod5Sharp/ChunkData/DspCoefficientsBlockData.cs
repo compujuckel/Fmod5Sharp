@@ -36,5 +36,10 @@ namespace Fmod5Sharp.ChunkData
                 reader.ReadInt16();
             }
         }
+
+        public void Write(BinaryWriter writer)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

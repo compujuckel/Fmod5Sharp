@@ -9,7 +9,7 @@
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <IsTrimmable>true</IsTrimmable>
-        <LangVersion>10</LangVersion>
+        <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <PackageId>Fmod5Sharp</PackageId>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -19,7 +19,7 @@
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/SamboyCoding/Fmod5Sharp.git</RepositoryUrl>
-        <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+        <TargetFramework>net8.0</TargetFramework>
         <Title>FMOD5 Sharp</Title>
         <Version>3.0.1</Version>
         <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
@@ -28,9 +28,10 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
         <PackageReference Include="IndexRange" Version="1.0.2"/>
-        <PackageReference Include="NAudio.Core" Version="2.1.0"/>
+        <PackageReference Include="NAudio.Core" Version="2.2.1" />
         <PackageReference Include="OggVorbisEncoder" Version="1.2.0"/>
         <PackageReference Include="System.Text.Json" Version="6.0.5"/>
+        <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
     </ItemGroup>
 
     <ItemGroup>

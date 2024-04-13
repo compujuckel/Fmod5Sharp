@@ -6,7 +6,7 @@ using Fmod5Sharp.Util;
 
 namespace Fmod5Sharp.FmodTypes
 {
-	public class FmodAudioHeader
+	public class FmodAudioHeader : IBinaryWritable
 	{
 		private static readonly object ChunkReadingLock = new();
 
@@ -20,6 +20,13 @@ namespace Fmod5Sharp.FmodTypes
 		internal readonly uint SizeOfSampleHeaders;
 		internal readonly uint SizeOfNameTable;
 		internal readonly uint SizeOfData;
+
+		internal uint Unknown1;
+		internal uint Unknown2;
+		internal uint Flags;
+		internal ulong HashLower;
+		internal ulong HashUpper;
+		internal ulong Unknown3;
 		
 		internal readonly List<FmodSampleMetadata> Samples = new();
 
@@ -40,25 +47,25 @@ namespace Fmod5Sharp.FmodTypes
 			SizeOfData = reader.ReadUInt32(); //0x14
 			AudioType = (FmodAudioType) reader.ReadUInt32(); //0x18
 
-			reader.ReadUInt32(); //Skip 0x1C which is always 0
+			Unknown1 = reader.ReadUInt32(); //Skip 0x1C which is always 0
 			
 			if (Version == 0)
 			{
 				SizeOfThisHeader = 0x40;
-				reader.ReadUInt32(); //Version 0 has an extra field at 0x20 before flags
+				Unknown2 = reader.ReadUInt32(); //Version 0 has an extra field at 0x20 before flags
 			}
 			else
 			{
 				SizeOfThisHeader = 0x3C;
 			}
 			
-			reader.ReadUInt32(); //Skip 0x20 (flags)
+			Flags = reader.ReadUInt32(); //Skip 0x20 (flags)
 
 			//128-bit hash
-			var hashLower = reader.ReadUInt64(); //0x24
-			var hashUpper = reader.ReadUInt64(); //0x30
+			HashLower = reader.ReadUInt64(); //0x24
+			HashUpper = reader.ReadUInt64(); //0x30
 
-			reader.ReadUInt64(); //Skip unknown value at 0x34
+			Unknown3 = reader.ReadUInt64(); //Skip unknown value at 0x34
 
 			var sampleHeadersStart = reader.Position();
 			for (var i = 0; i < NumSamples; i++)
@@ -97,6 +104,40 @@ namespace Fmod5Sharp.FmodTypes
 			}
 			
 			IsValid = true;
+		}
+
+		public void Write(BinaryWriter writer)
+		{
+			writer.Write("FSB5"u8);
+			writer.Write(Version);
+			writer.Write(NumSamples);
+			writer.Write(SizeOfSampleHeaders);
+			writer.Write(SizeOfNameTable);
+			writer.Write(SizeOfData);
+			writer.Write((uint)AudioType);
+			writer.Write(Unknown1);
+
+			if (Version == 0)
+			{
+				writer.Write(Unknown2);
+			}
+			
+			writer.Write(Flags);
+			writer.Write(HashLower);
+			writer.Write(HashUpper);
+			writer.Write(Unknown3);
+
+			foreach (var sample in Samples)
+			{
+				sample.Write(writer);
+				
+				if (!sample.HasAnyChunks) continue;
+
+				foreach (var chunk in sample.Chunks)
+				{
+					chunk.Write(writer);
+				}
+			}
 		}
 	}
 }

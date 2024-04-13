@@ -40,7 +40,7 @@ namespace Fmod5Sharp.CodecRebuilders
             for (var i = 0; i < frameCount; i++)
             {
                 //Each byte is a scale and a predictor
-                var combined = adpcm[inIndex++];
+                var combined = adpcm.Span[inIndex++];
                 var scale = 1 << (combined & 0xF);
                 var predictor = combined >> 4;
 
@@ -54,7 +54,7 @@ namespace Fmod5Sharp.CodecRebuilders
                 for (var s = 0; s < samplesToRead; s++)
                 {
                     //Raw value
-                    var adpcmSample = (int) (s % 2 == 0 ? Utils.GetHighNibbleSigned(adpcm[inIndex]) : Utils.GetLowNibbleSigned(adpcm[inIndex++]));
+                    var adpcmSample = (int) (s % 2 == 0 ? Utils.GetHighNibbleSigned(adpcm.Span[inIndex]) : Utils.GetLowNibbleSigned(adpcm.Span[inIndex++]));
 
                     //Adaptive processing
                     adpcmSample = (adpcmSample * scale) << 11;

@@ -12,5 +12,11 @@ namespace Fmod5Sharp.ChunkData
 			LoopStart = reader.ReadUInt32();
 			LoopEnd = reader.ReadUInt32();
 		}
+
+		public void Write(BinaryWriter writer)
+		{
+			writer.Write(LoopStart);
+			writer.Write(LoopEnd);
+		}
 	}
 }

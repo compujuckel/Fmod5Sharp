@@ -1,22 +1,25 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using Fmod5Sharp.CodecRebuilders;
+using Fmod5Sharp.Util;
 
 namespace Fmod5Sharp.FmodTypes
 {
-    public class FmodSample
+    public class FmodSample : IBinaryWritable
     {
         public FmodSampleMetadata Metadata;
-        public byte[] SampleBytes;
+        public Memory<byte> SampleBytes;
         public string? Name;
         internal FmodSoundBank? MyBank;
 
-        public FmodSample(FmodSampleMetadata metadata, byte[] sampleBytes)
+        public FmodSample(FmodSampleMetadata metadata, Memory<byte> sampleBytes)
         {
             Metadata = metadata;
             SampleBytes = sampleBytes;
         }
 
-#if NET6_0
+#if NET6_0_OR_GREATER
 		public bool RebuildAsStandardFileFormat([NotNullWhen(true)] out byte[]? data, [NotNullWhen(true)] out string? fileExtension)
 #else
         public bool RebuildAsStandardFileFormat(out byte[]? data, out string? fileExtension)
@@ -47,6 +50,11 @@ namespace Fmod5Sharp.FmodTypes
                     fileExtension = null;
                     return false;
             }
+        }
+
+        public void Write(BinaryWriter writer)
+        {
+            writer.Write(SampleBytes.Span);
         }
     }
 }

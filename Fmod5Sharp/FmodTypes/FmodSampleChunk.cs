@@ -5,7 +5,7 @@ using Fmod5Sharp.Util;
 
 namespace Fmod5Sharp.FmodTypes
 {
-	internal class FmodSampleChunk : IBinaryReadable
+	internal class FmodSampleChunk : IBinaryReadable, IBinaryWritable
 	{
 		internal static FmodSampleMetadata? CurrentSample;
 		
@@ -42,6 +42,26 @@ namespace Fmod5Sharp.FmodTypes
 			if (actualBytesRead != ChunkSize)
 			{
 				throw new Exception($"Expected fmod sample chunk to read {ChunkSize} bytes, but it only read {actualBytesRead}");
+			}
+		}
+
+		public void Write(BinaryWriter writer)
+		{
+			uint chunkInfoRaw = 0;
+			chunkInfoRaw.SetBits(0, 1, MoreChunks ? 1U : 0U);
+			chunkInfoRaw.SetBits(1, 24, ChunkSize);
+			chunkInfoRaw.SetBits(25, 7, (uint)ChunkType);
+			writer.Write(chunkInfoRaw);
+
+			var startPos = writer.Position();
+
+			ChunkData.Write(writer);
+			
+			var actualBytesWritten = writer.Position() - startPos;
+
+			if (actualBytesWritten != ChunkSize)
+			{
+				throw new Exception($"Expected fmod sample chunk to read {ChunkSize} bytes, but it only read {actualBytesWritten}");
 			}
 		}
 	}

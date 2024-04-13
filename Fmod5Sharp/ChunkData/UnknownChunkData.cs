@@ -10,5 +10,10 @@ namespace Fmod5Sharp.ChunkData
 		{
 			UnknownData = reader.ReadBytes((int)expectedSize);
 		}
+
+		public void Write(BinaryWriter writer)
+		{
+			writer.Write(UnknownData);
+		}
 	}
 }
