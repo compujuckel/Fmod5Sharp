@@ -7,7 +7,7 @@
         <DebugType>embedded</DebugType>
         <Description>Decoder for FMOD 5 sound banks (FSB files)</Description>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <!--<GeneratePackageOnBuild>true</GeneratePackageOnBuild>-->
         <IsTrimmable>true</IsTrimmable>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
